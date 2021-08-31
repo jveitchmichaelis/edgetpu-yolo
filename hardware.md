@@ -103,7 +103,7 @@ The Jetson Nano supports a 5V 40x40mm PWM fan - e.g. a [Noctua](https://noctua.a
 
 I put my Nano in a nice 3D printed [enclosure](https://www.thingiverse.com/thing:3518410), which came out reasonably well on the Ultimaker S5 we have here at the South Pole. Some of the port walls are a little thin, but they work. Here's the final product (yes the fan is installed the wrong way up):
 
-![Jetson nano in an enclosure](../main/images/jetson_nano_enclosure.png)
+![Jetson nano in an enclosure](../main/images/jetson_nano_case.png)
 
 ### Jetson Nano kernel configuration
 
