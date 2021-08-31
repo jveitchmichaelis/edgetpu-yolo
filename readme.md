@@ -52,7 +52,7 @@ git clone https://github.com/jveitchmichaelis/edgetpu-yolo
 cd edgetpu-yolo
 
 # Run the test script
-python test_edgetpu.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
+python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
 ```
 
 Wasn't that easy? You can swap out different models and try other images if you like. You should see an inference speed of around 25 fps with a 224x224 px input model.
@@ -77,7 +77,7 @@ Note if you're using a PCIe accelerator, you will need to install an appropriate
 As the introduction says, all you need to do is install the dependencies and then run:
 
 ```
-python test_edgetpu.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
+python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
 ```
 
 This should give you first a speed benchmark (on 100 images - edit the file if you want to run more) and then on the Zidane test image (you should get two detections for the 224 model).
@@ -102,6 +102,21 @@ model.process_predictions(pred[0], full_image, pad)
 
 It's not yet ready for production(!) but you should find it easy to adapt.
 
+## Docker
+
+If you want, you can run everything inside a Docker container. I've set it up so that you should mount this repository as an external volume (easier for experimenting/modifying files on the fly).
+
+```
+cd docker
+docker build -t edgetpu .
+
+docker run -it --rm --privileged -v /path/to/repo:/yolo edgetpu bash
+> cd /yolo
+> python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
+```
+
+Performance seems to be slightly faster in Docker, perhaps due to updated versions of some libraries?
+
 ## Benchmarks/Performance
 
 Here is the result of running three different models. All benchmarks were performed using an M.2 accelerator on a Jetson Nano 4GB. Settings are `conf_thresh`of 0.25, `iou_thresh` of 0.45. If you fiddle these so you get more bounding boxes, speed will decrease as NMS takes more time.
@@ -112,7 +127,7 @@ Here is the result of running three different models. All benchmarks were perfor
 * \>= 256 px currently fails to compile due to large tensors. It's probable that the backbone alone would compile fine and then detection can run on CPU, but this is typically extremely slow - an order of magnitude slower. Better, I think, to explore options for Yolov5 models with smaller width/depth parameters.
 
 ```
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python test_edgetpu.py -m yolov5s-int8-96_edgetpu.tflite --bench_speed
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python detect.py -m yolov5s-int8-96_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
 100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:01<00:00, 58.28it/s]
@@ -120,7 +135,7 @@ INFO:__main__:Inference time (EdgeTPU): 13.40 +- 1.68 ms
 INFO:__main__:NMS time (CPU): 0.43 +- 0.39 ms
 INFO:__main__:Mean FPS: 72.30
 
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python test_edgetpu.py -m yolov5s-int8-192_edgetpu.tflite --bench_speed
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python detect.py -m yolov5s-int8-192_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
 100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 30.85it/s]
@@ -128,7 +143,7 @@ INFO:__main__:Inference time (EdgeTPU): 26.43 +- 4.09 ms
 INFO:__main__:NMS time (CPU): 0.77 +- 0.35 ms
 INFO:__main__:Mean FPS: 36.77
 
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python test_edgetpu.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
 100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 25.15it/s]
@@ -158,7 +173,7 @@ Performance is considerably worse than the benchmarks on yolov5s.pt, _however_ t
 There are `prediction.json` files for each model in the `coco_eval` folder. You can re-run with:
 
 ```
-python test_edgetpu.py -m yolov5s-int8-224_edgetpu.tflite --bench_coco --coco_path /home/josh/data/coco/images/val2017/ -q
+python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_coco --coco_path /home/josh/data/coco/images/val2017/ -q
 ```
 
 The `q` option silences logging to stdout. You may wish to turn this off to see that stuff is being detected.

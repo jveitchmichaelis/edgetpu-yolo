@@ -1,8 +1,8 @@
 FROM ubuntu:20.04 
 
 RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y git curl 
-RUN apt-get install -y gnupg
+RUN apt-get install -y git curl gnupg
+
 # Install PyCoral
 
 RUN echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | tee /etc/apt/sources.list.d/coral-edgetpu.list
