@@ -52,7 +52,7 @@ git clone https://github.com/jveitchmichaelis/edgetpu-yolo
 cd edgetpu-yolo
 
 # Run the test script
-python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
+python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
 ```
 
 Wasn't that easy? You can swap out different models and try other images if you like. You should see an inference speed of around 25 fps with a 224x224 px input model.
@@ -77,7 +77,7 @@ Note if you're using a PCIe accelerator, you will need to install an appropriate
 As the introduction says, all you need to do is install the dependencies and then run:
 
 ```
-python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
+python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
 ```
 
 This should give you first a speed benchmark (on 100 images - edit the file if you want to run more) and then on the Zidane test image (you should get two detections for the 224 model).
@@ -97,7 +97,6 @@ input_shape = model.get_input_shape()
 
 full_image, net_image, pad = get_image_tensor("/path/to/image", input_shape[0])
 pred = model.predict(net_image)
-model.process_predictions(pred[0], full_image, pad)
 ```
 
 It's not yet ready for production(!) but you should find it easy to adapt.
@@ -127,7 +126,7 @@ Here is the result of running three different models. All benchmarks were perfor
 * \>= 256 px currently fails to compile due to large tensors. It's probable that the backbone alone would compile fine and then detection can run on CPU, but this is typically extremely slow - an order of magnitude slower. Better, I think, to explore options for Yolov5 models with smaller width/depth parameters.
 
 ```
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python detect.py -m yolov5s-int8-96_edgetpu.tflite --bench_speed
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 detect.py -m yolov5s-int8-96_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
 100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:01<00:00, 58.28it/s]
@@ -135,7 +134,7 @@ INFO:__main__:Inference time (EdgeTPU): 13.40 +- 1.68 ms
 INFO:__main__:NMS time (CPU): 0.43 +- 0.39 ms
 INFO:__main__:Mean FPS: 72.30
 
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python detect.py -m yolov5s-int8-192_edgetpu.tflite --bench_speed
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 detect.py -m yolov5s-int8-192_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
 100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 30.85it/s]
@@ -143,7 +142,7 @@ INFO:__main__:Inference time (EdgeTPU): 26.43 +- 4.09 ms
 INFO:__main__:NMS time (CPU): 0.77 +- 0.35 ms
 INFO:__main__:Mean FPS: 36.77
 
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
 100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 25.15it/s]
@@ -173,7 +172,7 @@ Performance is considerably worse than the benchmarks on yolov5s.pt, _however_ t
 There are `prediction.json` files for each model in the `coco_eval` folder. You can re-run with:
 
 ```
-python detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_coco --coco_path /home/josh/data/coco/images/val2017/ -q
+python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_coco --coco_path /home/josh/data/coco/images/val2017/ -q
 ```
 
 The `q` option silences logging to stdout. You may wish to turn this off to see that stuff is being detected.
@@ -181,13 +180,13 @@ The `q` option silences logging to stdout. You may wish to turn this off to see 
 Once you've run this, you can run the `coco_eval.py` script to process the results. Run with something like:
 
 ```
-python eval_coco.py --coco_path /home/josh/data/coco/images/val2017/ --pred_pat ./coco_eval/yolov5s-int8-192_edgetpu.tflite_predictions.json --gt_path /home/josh/data/coco/annotations/instances_val2017.json
+python3 eval_coco.py --coco_path /home/josh/data/coco/images/val2017/ --pred_pat ./coco_eval/yolov5s-int8-192_edgetpu.tflite_predictions.json --gt_path /home/josh/data/coco/annotations/instances_val2017.json
 ```
 
 and you should get out something like:
 
 ```
-(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python eval_coco.py --coco_path /home/josh/data/coco/images/val2017/ --pred_pat ./coco_eval/yolov5s-int8-224_edgetpu.tflite_predictions.json --gt_path /home/josh/data/coco/annotations/instances_val2017.json
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 eval_coco.py --coco_path /home/josh/data/coco/images/val2017/ --pred_pat ./coco_eval/yolov5s-int8-224_edgetpu.tflite_predictions.json --gt_path /home/josh/data/coco/annotations/instances_val2017.json
 INFO:COCOEval:Looking for: /home/josh/data/coco/images/val2017/*.jpg
 loading annotations into memory...
 Done (t=1.92s)
