@@ -35,4 +35,5 @@ if __name__ == "__main__":
     eval.summarize()
     map, map50 = eval.stats[:2]  # update results (mAP@0.5:0.95, mAP@0.5)
     
-    print(map, map50)
+    logger.info("mAP: {}".format(map))
+    logger.info("mAP50: {}".format(map50))
