@@ -24,6 +24,8 @@ if __name__ == "__main__":
     parser.add_argument("--model", "-m", help="weights file", required=True)
     parser.add_argument("--bench_speed", action='store_true', help="run speed test on dummy data")
     parser.add_argument("--bench_image", action='store_true', help="run detection test")
+    parser.add_argument("--conf_thresh", type=float, default=0.25, help="model confidence threshold")
+    parser.add_argument("--iou_thresh", type=float, default=0.45, help="NMS IOU threshold")
     parser.add_argument("--names", type=str, default='data/coco.yaml', help="Names file")
     parser.add_argument("--image", "-i", type=str, help="Image file to run detection on")
     parser.add_argument("--device", type=int, default=0, help="Image capture device to run live detection")
@@ -42,7 +44,7 @@ if __name__ == "__main__":
         logger.error("Please select either an input image or a stream")
         exit(1)
     
-    model = EdgeTPUModel(args.model, args.names)
+    model = EdgeTPUModel(args.model, args.names, conf_thresh=args.conf_thresh, iou_thresh=args.iou_thresh)
     input_size = model.get_image_size()
 
     x = (255*np.random.random((3,*input_size))).astype(np.uint8)

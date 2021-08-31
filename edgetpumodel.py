@@ -44,6 +44,9 @@ class EdgeTPUModel:
         self.agnostic_nms = agnostic_nms
         self.max_det = 1000
         
+        logger.info("Confidence threshold: {}".format(conf_thresh))
+        logger.info("IOU threshold: {}".format(iou_thresh))
+        
         self.inference_time = None
         self.nms_time = None
         self.interpreter = None
@@ -102,6 +105,7 @@ class EdgeTPUModel:
         logger.debug("Output scale: {}".format(self.output_scale))
         logger.debug("Output zero: {}".format(self.output_zero))
         
+        logger.info("Successfully loaded {}".format(self.model_file))
     
     def get_image_size(self):
         """
