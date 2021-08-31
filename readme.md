@@ -6,22 +6,23 @@ This repository is an entry into the Ultralytics export challenge for the EdgeTP
 
 * A minimal repository which has extremely few dependencies:
   * `pycoral` , `opencv` for image handling (you could drop this using e.g Pillow) and `numpy`
-  * Other "light" dependencies include `tqdm` for pretty logging, and `yaml` for parsing names files.
+  * Other "light" dependencies include `tqdm` for progress reporting, and `yaml` for parsing names files. `json` is also used for output logs (e.g. benchmarks)
   * **No dependency on Torch**, _which means no building Torch_ - from clone to inference is extremely fast.
-  * Code has been selectively taken from the original Ultralytics repository and converted to use Numpy, for example non-max suppression. There is essentially no speed penalty for this on a CPU-only device.
+  * Code has been selectively taken from the original Ultralytics repository and converted to use Numpy where necessary, for example non-max suppression. There is essentially no speed penalty for this on a CPU-only device.
 * I chose _not_ to fork ultralytics/yolov5 because the competition scoring was weighted by deployment simplicity. Installing Torch and various dependencies on non-desktop hardware can be a significant challenge - and there is no need for it when using the tflite-runtime.
-  * This does mean that currently there is no simple benchmark code in this repo, but it should be easy to support.
-* Packages are easily installable on embedded platforms such as the Google Coral Dev board and the Jetson Nano
+* **Accuracy benchmark** code is provided for running on COCO 2017. It's a slimmed down version of `val.py` and there is also a script for checking the output. mAP results are provided in this readme.
+  * For the 224x224 model: mAP **18.4**, mAP50 **30.5**
+* Packages are easily installable on embedded platforms such as the Google Coral Dev board and the Jetson Nano. **It should also work on any platform that an EdgeTPU can be connected to, e.g. Desktop.**
 * This repository uses the Jetson Nano as an example, but the code should be transferrable given the few dependencies required
-  * Non-tested setup instructions are given for the Coral, but these are largely based on Google's guidelines.
+  * Setup instructions are given for the Coral, but these are largely based on Google's guidelines and are not tested as I didn't have access to a dev board at time of writing.
 * tflite export is taken from https://github.com/zldrobit/yolov5:
-  * These models have the detection layer built-in. This provides a significant speed boost, but does mean that larger models are unable to compile.
-* Speed is good: you can expect 24 fps using the EdgeTPU on a Jetson Nano for a 224 px input.
+  * These models have the detection layer built-in as a custom Keras layer. This provides a significant speed boost, but does mean that larger models are unable to compile.
+* **Speed benchmarks are good**: you can expect 24 fps using the EdgeTPU on a Jetson Nano for a 224 px input.
   * You can easily swap in a different model/input size, but larger/smaller models are going to vary in runtime and accuracy.
   * The workaround for exporting a 416 px model is to use an older runtime version where the transpose operation is not supported. This significantly slows model performance because then the `Detect` stage must be run as a CPU operation. See [bogdannedelcu](https://github.com/bogdannedelcu/yolov5-export-to-coraldevmini)'s solution for an example of this.
     * Note this approach doesn't work any more because the compiler supports the Transpose option. I tried exporting with different model runtimes in an attempt to force the compiler to switch to CPU execution before these layers, but it didn't seem to help.
-* Extensive documentation is provided for hardware setup and library testing. This is more for the Jetson than anything else, as library setup on the Coral Dev Board should be minimal.
-* A Dockerfile is provided for a repeatable setup and test environment
+* **Extensive documentation** is provided for hardware setup and library testing. This is more for the Jetson than anything else, as library setup on the Coral Dev Board should be minimal.
+* A **Dockerfile** is provided for a repeatable setup and test environment
 
 ## Introduction
 
@@ -103,7 +104,7 @@ It's not yet ready for production(!) but you should find it easy to adapt.
 
 ## Benchmarks/Performance
 
-Here is the result of running three different models. All benchmarks were performed using an M.2 accelerator on a Jetson Nano 4GB.
+Here is the result of running three different models. All benchmarks were performed using an M.2 accelerator on a Jetson Nano 4GB. Settings are `conf_thresh`of 0.25, `iou_thresh` of 0.45. If you fiddle these so you get more bounding boxes, speed will decrease as NMS takes more time.
 
 * 96x96 input, runs fully on the TPU ~60-70fps
 * 192x192 input, runs mostly on the TPU ~30-35fps
@@ -114,7 +115,7 @@ Here is the result of running three different models. All benchmarks were perfor
 (py36) josh@josh-jetson:~/code/edgetpu_yolo$ python test_edgetpu.py -m yolov5s-int8-96_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
-100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 100/100 [00:01<00:00, 58.28it/s]
+100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:01<00:00, 58.28it/s]
 INFO:__main__:Inference time (EdgeTPU): 13.40 +- 1.68 ms
 INFO:__main__:NMS time (CPU): 0.43 +- 0.39 ms
 INFO:__main__:Mean FPS: 72.30
@@ -122,7 +123,7 @@ INFO:__main__:Mean FPS: 72.30
 (py36) josh@josh-jetson:~/code/edgetpu_yolo$ python test_edgetpu.py -m yolov5s-int8-192_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
-100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 100/100 [00:03<00:00, 30.85it/s]
+100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 30.85it/s]
 INFO:__main__:Inference time (EdgeTPU): 26.43 +- 4.09 ms
 INFO:__main__:NMS time (CPU): 0.77 +- 0.35 ms
 INFO:__main__:Mean FPS: 36.77
@@ -130,14 +131,75 @@ INFO:__main__:Mean FPS: 36.77
 (py36) josh@josh-jetson:~/code/edgetpu_yolo$ python test_edgetpu.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
-100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 100/100 [00:03<00:00, 25.15it/s]
+100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 25.15it/s]
 INFO:__main__:Inference time (EdgeTPU): 33.31 +- 3.69 ms
 INFO:__main__:NMS time (CPU): 0.76 +- 0.12 ms
 INFO:__main__:Mean FPS: 29.35
 ```
 
-I have not performed an explicit accuracy benchmark on these models, but I will say that 96x96 is probably unusable unless it was a model that was properly quantisation-aware trained and was for a very limited task. 224px gives good results on standard images, e.g. zidane, but it won't find the tie. This is quite normal for edge-based models with small inputs.
+I would say that 96x96 is probably unusable unless it was a model that was properly quantisation-aware trained and was for a very limited task (see accuracy results below).
 
-As far as I'm aware, the original TFLite models can run on the desktop and can be analysed as usual that way.
+224px gives good results on standard images, e.g. `zidane`, but it might not always find the tie. This is quite normal for edge-based models with small inputs.
 
 You could attempt to tile the model on larger images which may give reasonable results.
+
+### MS COCO Benchmarking
+
+**Note that benchmarks use the same parameters as Ultralytics/yolov5; conf=0.001, iou=0.65**. These settings _significantly_ slow down performance due to the large number of bounding boxes created (and NMS'd). You will find that inference speed drops up to 50%. There are sample prediction files in the repo for the default conf=0.25/iou=0.45 - these result in a slightly lower mAP but are much faster.
+
+* 96x96: mAP **6.3** , mAP50 **11.0** 
+
+* 192x192: mAP **16.1**, mAP50 **26.7**
+
+* 224x224: mAP **18.4**, mAP50 **30.5**
+
+Performance is considerably worse than the benchmarks on yolov5s.pt, _however_ this is a post-training quantised model on images 3x smaller.
+
+There are `prediction.json` files for each model in the `coco_eval` folder. You can re-run with:
+
+```
+python test_edgetpu.py -m yolov5s-int8-224_edgetpu.tflite --bench_coco --coco_path /home/josh/data/coco/images/val2017/ -q
+```
+
+The `q` option silences logging to stdout. You may wish to turn this off to see that stuff is being detected.
+
+Once you've run this, you can run the `coco_eval.py` script to process the results. Run with something like:
+
+```
+python eval_coco.py --coco_path /home/josh/data/coco/images/val2017/ --pred_pat ./coco_eval/yolov5s-int8-192_edgetpu.tflite_predictions.json --gt_path /home/josh/data/coco/annotations/instances_val2017.json
+```
+
+and you should get out something like:
+
+```
+(py36) josh@josh-jetson:~/code/edgetpu_yolo$ python eval_coco.py --coco_path /home/josh/data/coco/images/val2017/ --pred_pat ./coco_eval/yolov5s-int8-224_edgetpu.tflite_predictions.json --gt_path /home/josh/data/coco/annotations/instances_val2017.json
+INFO:COCOEval:Looking for: /home/josh/data/coco/images/val2017/*.jpg
+loading annotations into memory...
+Done (t=1.92s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.45s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=52.38s).
+Accumulating evaluation results...
+DONE (t=8.63s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.158
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.251
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.168
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.012
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.136
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.329
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.150
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.185
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.185
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.012
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.158
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.397
+INFO:COCOEval:mAP: 0.15768057519574114
+INFO:COCOEval:mAP50: 0.25142469970806514
+```
+
