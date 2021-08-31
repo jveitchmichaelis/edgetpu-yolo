@@ -16,7 +16,7 @@ pip3 install -r requirements.txt
 
 ## Exporting models
 
-Generally we're going to assume that you're _not_ doing this from your edge device. You will need a desktop computer with various packages installed.
+Generally we're going to assume that you're _not_ doing this from your edge device. You will need a desktop computer with various packages installed. This is actually a requirement for the EdgeTPU compiler anyway.
 
 ### PyTorch
 
@@ -24,13 +24,13 @@ Standard Yolov5 is an exported PyTorch `.pt` file. You can download the 'officia
 
 ### Tflite
 
-A tflite model is necessary to export to the EdgeTPU. Tensorflow includes a tflite converter which accepts either a saved Tensorflow graph or a Keras model. I would guess most people will be comfortable using Keras models.
-
-The hard work has been done for us, all you need to do is run:
+A tflite model is necessary to export to the EdgeTPU. Tensorflow includes a tflite converter which accepts either a saved Tensorflow graph or a Keras model. I would guess most people will be comfortable using Keras models. Fortunately, the hard work has been done for us, so all you need to do is run:
 
 ```
 python .\models\tf.py --img-size 224 --tf-raw-resize --source D:\data\coco\images\train2014 --tfl-int8 --ncalib 1000
 ```
+
+By default this will pick up the yolov5s.pt weights.
 
 Note `--img-size` should be a multiple of 16 generally, 224 is a good speed/accuracy trade-off. You can try going higher, but at some point the models will no longer compiler for Edge. `--source` should be a path to some images that the model use as a representative dataset. They don't need to be anything special, just random images (so we tend to use COCO). These are used to determine how to scale the weights in the model. We also need `--tfl-int8` so that only `INT8` supported operations are generated.
 
@@ -38,15 +38,17 @@ What this code does internally is create a version of Yolov5 in Keras. For each 
 
 Why do we set an image size? The EdgeTPU requires fixed size inputs and so we have to bake this into the model. This is pretty common for edge models (e.g. with the Neural Compute Stick). The input size is however arbitrary, provided the model fits into RAM. If you have e.g. a couple of convolution layers, the TPU will happily support input sizes of over 1024x1024. It will also support arbitrary numbers of input channels.
 
+The resulting model requires input and output scaling, as described [here](https://www.tensorflow.org/lite/performance/quantization_spec). From what I've seen with these models, the conversion is basically a normalisation to [0,255) and the output is the inverse. With other models (which accept say input values outside this range) you might see much more unusual scaling/zero point values.
+
 ### EdgeTPU
 
 This assumes you've exported a tflite model as above, using 8-bit input/output quantisation.
 
-You will need an x86 system running Linux. You can also use Google's web-based compiler which will do the same thing:
+You will need an x86 system running Linux. You can also use Google's web-based compiler (upload your tflite model):
 
 https://colab.research.google.com/github/google-coral/tutorials/blob/master/compile_for_edgetpu.ipynb
 
-If you're running Windows, this will work perfectly well inside WSL. To install the compiler, follow the steps in the notebook on your own machine. It's straightforward:
+If you're running Windows, this will work perfectly well inside WSL (i.e. install Ubuntu from the app store). To install the compiler, follow the steps in the notebook on your own machine. It's straightforward:
 
 ```bash
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
