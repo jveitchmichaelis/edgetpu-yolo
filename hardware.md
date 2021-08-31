@@ -79,7 +79,7 @@ sudo apt install htop tmux tree git
 
 ### Installing the Google Coral/EdgeTPU
 
-These notes describe the setup and testing of the Google Coral Edge TPU in the Jetson Nano development board. Specifically the Coral model G650-04527-01 (M.2 A/E key) was used. This model mates with the M.2 E slot on the Nano dev board.
+These notes describe the setup and testing of the Google Coral Edge TPU in the Jetson Nano development board. Specifically the Coral model [G650-04527-01 (M.2 A/E key)](https://www.mouser.co.uk/new/google/coral-m2-accelerator-ae/) was used. This model mates with the M.2 E slot on the Nano dev board.
 
 #### Mechanical and Electrical
 
@@ -89,7 +89,7 @@ The M.2 retaining screw on the board I used was extremely tight and required a f
 
 When installed (prior to screwing down the Jetson module), the board should look something like below:
 
-![Google Coral installation into Jetson Nano dev board](../main/jetson_nano_coral.png)
+![Google Coral installation into Jetson Nano dev board](../main/images/jetson_nano_coral.png)
 
 Note that there is no thermal management here and there is no room for a heatsink on the TPU itself. Forced air cooling might be worth using. It's quite possible that in a hot environment, under load, the EdgeTPU will throttle. The dev board is not designed for production anyway so just bear it in mind.
 
@@ -101,9 +101,9 @@ The barrel adapter is **centre-positive**.
 
 The Jetson Nano supports a 5V 40x40mm PWM fan - e.g. a [Noctua](https://noctua.at/en/products/fan/nf-a4x10-5v-pwm). It can be attached to the heatsink using M3 screws. 12V fans may also work, but they will run slow. The fan connects via a standard ATX header on the dev board the same header that you find on desktop motherboards), so any off the shelf fan that fits should work. This is also recommended because while the module has a big ol' heatsink, it still gets quite warm under load.
 
-I put my Nano in a nice 3D printed enclosure, which came out reasonably well on the Ultimaker S5 we have here at the South Pole. Some of the port walls are a little thin, but they work. Here's the final product (yes the fan is installed the wrong way up):
+I put my Nano in a nice 3D printed [enclosure](https://www.thingiverse.com/thing:3518410), which came out reasonably well on the Ultimaker S5 we have here at the South Pole. Some of the port walls are a little thin, but they work. Here's the final product (yes the fan is installed the wrong way up):
 
-![Jetson nano in an enclosure](../main/jetson_nano_enclosure.png)
+![Jetson nano in an enclosure](../main/images/jetson_nano_enclosure.png)
 
 ### Jetson Nano kernel configuration
 
