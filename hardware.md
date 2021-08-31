@@ -89,7 +89,7 @@ The M.2 retaining screw on the board I used was extremely tight and required a f
 
 When installed (prior to screwing down the Jetson module), the board should look something like below:
 
-![image-20210826024851863](C:\Users\Josh\AppData\Roaming\Typora\typora-user-images\image-20210826024851863.png)
+![Google Coral installation into Jetson Nano dev board](../main/jetson_nano_coral.png)
 
 Note that there is no thermal management here and there is no room for a heatsink on the TPU itself. Forced air cooling might be worth using. It's quite possible that in a hot environment, under load, the EdgeTPU will throttle. The dev board is not designed for production anyway so just bear it in mind.
 
@@ -103,7 +103,7 @@ The Jetson Nano supports a 5V 40x40mm PWM fan - e.g. a [Noctua](https://noctua.a
 
 I put my Nano in a nice 3D printed enclosure, which came out reasonably well on the Ultimaker S5 we have here at the South Pole. Some of the port walls are a little thin, but they work. Here's the final product (yes the fan is installed the wrong way up):
 
-![image-20210901061653558](C:\Users\Josh\AppData\Roaming\Typora\typora-user-images\image-20210901061653558.png)
+![Jetson nano in an enclosure](../main/jetson_nano_enclosure.png)
 
 ### Jetson Nano kernel configuration
 
