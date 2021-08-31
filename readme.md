@@ -26,7 +26,7 @@ This repository is an entry into the Ultralytics export challenge for the EdgeTP
 
 ## Introduction
 
-In this repository we'll explore how to run a state-of-the-art object detection mode, [Yolov5], on the Google Coral EdgeTPU. 
+In this repository we'll explore how to run a state-of-the-art object detection mode, [Yolov5](https://github.com/ultralytics/yolov5), on the [Google Coral EdgeTPU](coral.ai/). 
 
 **TL;DR (see the Dockerfile):**
 
