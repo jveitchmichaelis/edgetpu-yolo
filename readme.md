@@ -52,7 +52,7 @@ git clone https://github.com/jveitchmichaelis/edgetpu-yolo
 cd edgetpu-yolo
 
 # Run the test script
-python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
+python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image
 ```
 
 Wasn't that easy? You can swap out different models and try other images if you like. You should see an inference speed of around 25 fps with a 224x224 px input model.
@@ -77,7 +77,8 @@ Note if you're using a PCIe accelerator, you will need to install an appropriate
 As the introduction says, all you need to do is install the dependencies and then run:
 
 ```
-python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image --bench_speed
+python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
+python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_image
 ```
 
 This should give you first a speed benchmark (on 100 images - edit the file if you want to run more) and then on the Zidane test image (you should get two detections for the 224 model).
