@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument("--bench_coco", action='store_true', help="Process a stream")
     parser.add_argument("--coco_path", type=str, help="Path to COCO 2017 Val folder")
     parser.add_argument("--quiet","-q", action='store_true', help="Disable logging (except errors)")
-    
+        
     args = parser.parse_args()
     
     if args.quiet:
@@ -88,6 +88,9 @@ if __name__ == "__main__":
 
     elif args.bench_coco:
         logger.info("Testing on COCO dataset")
+        
+        model.conf_thresh = 0.001
+        model.iou_thresh = 0.65
         
         coco_glob = os.path.join(args.coco_path, "*.jpg")
         images = glob.glob(coco_glob)
