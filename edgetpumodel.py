@@ -115,7 +115,7 @@ class EdgeTPUModel:
             logger.warn("Interpreter is not yet loaded")
             
     
-    def predict(self, image_path):
+    def predict(self, image_path, save_img=True, save_txt=True):
         logger.info("Attempting to load {}".format(image_path))
     
         full_image, net_image, pad = get_image_tensor(image_path, self.input_size[0])
@@ -124,7 +124,10 @@ class EdgeTPUModel:
         base, ext = os.path.splitext(image_path)
         
         output_path = base + "_detect" + ext
-        self.process_predictions(pred[0], full_image, pad, output_path)
+        det = self.process_predictions(pred[0], full_image, pad, output_path, save_img=save_img, save_txt=save_txt)
+        
+        return det
+        
         
     
     def forward(self, x:np.ndarray, with_nms=True) -> np.ndarray:
@@ -260,4 +263,4 @@ class EdgeTPUModel:
             if save_img:
               cv2.imwrite(output_path, output_image)
             
-            return det
+        return det

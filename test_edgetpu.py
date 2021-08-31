@@ -4,6 +4,8 @@ import argparse
 import logging
 import time
 from pathlib import Path
+import glob
+import json
 
 import numpy as np
 from tqdm import tqdm
@@ -14,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from edgetpumodel import EdgeTPUModel
-from utils import resize_and_pad, get_image_tensor
+from utils import resize_and_pad, get_image_tensor, save_one_json, coco80_to_coco91_class
 
 if __name__ == "__main__":
  
@@ -26,8 +28,15 @@ if __name__ == "__main__":
     parser.add_argument("--image", "-i", type=str, help="Image file to run detection on")
     parser.add_argument("--device", type=int, default=0, help="Image capture device to run live detection")
     parser.add_argument("--stream", action='store_true', help="Process a stream")
+    parser.add_argument("--bench_coco", action='store_true', help="Process a stream")
+    parser.add_argument("--coco_path", type=str, help="Path to COCO 2017 Val folder")
+    parser.add_argument("--quiet","-q", action='store_true', help="Disable logging (except errors)")
     
     args = parser.parse_args()
+    
+    if args.quiet:
+        logging.disable(logging.CRITICAL)
+        logger.disabled = True
     
     if args.stream and args.image:
         logger.error("Please select either an input image or a stream")
@@ -73,15 +82,43 @@ if __name__ == "__main__":
         fps = 1.0/total_times.mean()
         logger.info("Mean FPS: {:1.2f}".format(fps))
 
-    if args.bench_image:
+    elif args.bench_image:
         logger.info("Testing on Zidane image")
         model.predict("./data/images/zidane.jpg")
+
+    elif args.bench_coco:
+        logger.info("Testing on COCO dataset")
         
-    if args.image is not None:
+        coco_glob = os.path.join(args.coco_path, "*.jpg")
+        images = glob.glob(coco_glob)
+        
+        logger.info("Looking for: {}".format(coco_glob))
+        ids = [int(os.path.basename(i).split('.')[0]) for i in images]
+        
+        out_path = "./coco_eval"
+        os.makedirs("./coco_eval", exist_ok=True)
+        
+        logger.info("Found {} images".format(len(images)))
+        
+        class_map = coco80_to_coco91_class()
+        
+        predictions = []
+        
+        for image in tqdm(images):
+            res = model.predict(image, save_img=False, save_txt=False)
+            save_one_json(res, predictions, Path(image), class_map)
+            
+        pred_json = os.path.join(out_path,
+                    "{}_predictions.json".format(os.path.basename(args.model)))
+        
+        with open(pred_json, 'w') as f:
+            json.dump(predictions, f,indent=1)
+        
+    elif args.image is not None:
         logger.info("Testing on user image: {}".format(args.image))
         model.predict(args.image)
         
-    if args.stream:
+    elif args.stream:
         logger.info("Opening stream on device: {}".format(args.device))
         
         cam = cv2.VideoCapture(args.device)
