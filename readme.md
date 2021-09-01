@@ -15,8 +15,8 @@ This repository is an entry into the Ultralytics export challenge for the EdgeTP
 * Packages are easily installable on embedded platforms such as the Google Coral Dev board and the Jetson Nano. **It should also work on any platform that an EdgeTPU can be connected to, e.g. Desktop.**
 * This repository uses the Jetson Nano as an example, but the code should be transferrable given the few dependencies required
   * Setup instructions are given for the Coral, but these are largely based on Google's guidelines and are not tested as I didn't have access to a dev board at time of writing.
-* tflite export is taken from https://github.com/zldrobit/yolov5:
-  * These models have the detection layer built-in as a custom Keras layer. This provides a significant speed boost, but does mean that larger models are unable to compile.
+* tflite export is taken from https://github.com/ultralytics/yolov5/blob/master/models/tf.py
+  * These models have the detection step built-in as a custom Keras layer. This provides a significant speed boost, but does mean that larger models are unable to compile.
 * **Speed benchmarks are good**: you can expect 24 fps using the EdgeTPU on a Jetson Nano for a 224 px input.
   * You can easily swap in a different model/input size, but larger/smaller models are going to vary in runtime and accuracy.
   * The workaround for exporting a 416 px model is to use an older runtime version where the transpose operation is not supported. This significantly slows model performance because then the `Detect` stage must be run as a CPU operation. See [bogdannedelcu](https://github.com/bogdannedelcu/yolov5-export-to-coraldevmini)'s solution for an example of this.
@@ -130,7 +130,7 @@ Here is the result of running three different models. All benchmarks were perfor
 (py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 detect.py -m yolov5s-int8-96_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
-100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:01<00:00, 58.28it/s]
+100%|Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦| 100/100 [00:01<00:00, 58.28it/s]
 INFO:__main__:Inference time (EdgeTPU): 13.40 +- 1.68 ms
 INFO:__main__:NMS time (CPU): 0.43 +- 0.39 ms
 INFO:__main__:Mean FPS: 72.30
@@ -138,7 +138,7 @@ INFO:__main__:Mean FPS: 72.30
 (py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 detect.py -m yolov5s-int8-192_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
-100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 30.85it/s]
+100%|Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦| 100/100 [00:03<00:00, 30.85it/s]
 INFO:__main__:Inference time (EdgeTPU): 26.43 +- 4.09 ms
 INFO:__main__:NMS time (CPU): 0.77 +- 0.35 ms
 INFO:__main__:Mean FPS: 36.77
@@ -146,7 +146,7 @@ INFO:__main__:Mean FPS: 36.77
 (py36) josh@josh-jetson:~/code/edgetpu_yolo$ python3 detect.py -m yolov5s-int8-224_edgetpu.tflite --bench_speed
 INFO:EdgeTPUModel:Loaded 80 classes
 INFO:__main__:Performing test run
-100%|¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦| 100/100 [00:03<00:00, 25.15it/s]
+100%|Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦Â¦| 100/100 [00:03<00:00, 25.15it/s]
 INFO:__main__:Inference time (EdgeTPU): 33.31 +- 3.69 ms
 INFO:__main__:NMS time (CPU): 0.76 +- 0.12 ms
 INFO:__main__:Mean FPS: 29.35
