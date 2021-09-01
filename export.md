@@ -6,13 +6,14 @@ Hoo boy, that took a while. Now we're in a position to start exporting and conve
 
 ### On your desktop:
 
-Get the repository and follow Ultralytics' install instructions - we're going to use a different repository that has TFLite export built-in:
+Get the repository and follow Ultralytics' install instructions:
 
 ```
-git clone  https://github.com/zldrobit/yolov5
+git clone  https://github.com/ultralytics/yolov5
 cd yolov5
 pip3 install -r requirements.txt
 ```
+Note tf export has now been merged into the main repository, so you should be good.
 
 ## Exporting models
 
