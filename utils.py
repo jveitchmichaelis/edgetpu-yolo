@@ -62,11 +62,12 @@ def resize_and_pad(image, desired_size):
         
     return new_im, pad
      
-def get_image_tensor(image_path, max_size, debug=False):
+def get_image_tensor(img, max_size, debug=False):
     """
     Reshapes an input image into a square with sides max_size
     """
-    img = cv2.imread(image_path)
+    if type(img) is str:
+        img = cv2.imread(img)
     
     resized, pad = resize_and_pad(img, max_size)
     resized = resized.astype(np.float32)
