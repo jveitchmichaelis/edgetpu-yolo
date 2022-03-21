@@ -101,7 +101,7 @@ The barrel adapter is **centre-positive**.
 
 The Jetson Nano supports a 5V 40x40mm PWM fan - e.g. a [Noctua](https://noctua.at/en/products/fan/nf-a4x10-5v-pwm). It can be attached to the heatsink using M3 screws. 12V fans may also work, but they will run slow. The fan connects via a standard ATX header on the dev board the same header that you find on desktop motherboards), so any off the shelf fan that fits should work. This is also recommended because while the module has a big ol' heatsink, it still gets quite warm under load.
 
-I put my Nano in a nice 3D printed [enclosure](https://www.thingiverse.com/thing:3518410), which came out reasonably well on the Ultimaker S5 we have here at the South Pole. Some of the port walls are a little thin, but they work. Here's the final product (yes the fan is installed the wrong way up):
+I put my Nano in a nice 3D printed [enclosure](https://www.thingiverse.com/thing:3518410), which came out reasonably well on the Ultimaker S5 we have here at the South Pole. Some of the port walls are a little thin, but they work. Here's the final product - directed down seems to work best[0]:
 
 ![Jetson nano in an enclosure](../main/images/jetson_nano_case.png)
 
@@ -164,3 +164,4 @@ and that the `apex` device exists:
 ls /dev/apex\_0
 ```
 
+[0] https://www.patricksteinert.de/technology/internet-of-things/nvidia-jetson-nano-fan-direction/
