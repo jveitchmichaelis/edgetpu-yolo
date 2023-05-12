@@ -1,32 +1,12 @@
 [TOC]
 
-## Ultralytics Competition Notes
-
-This repository is an entry into the Ultralytics export challenge for the EdgeTPU. It provides the following solution:
-
-* A minimal repository which has extremely few dependencies:
-  * `pycoral` , `opencv` for image handling (you could drop this using e.g Pillow) and `numpy`
-  * Other "light" dependencies include `tqdm` for progress reporting, and `yaml` for parsing names files. `json` is also used for output logs (e.g. benchmarks)
-  * **No dependency on Torch**, _which means no building Torch_ - from clone to inference is extremely fast.
-  * Code has been selectively taken from the original Ultralytics repository and converted to use Numpy where necessary, for example non-max suppression. There is essentially no speed penalty for this on a CPU-only device.
-* I chose _not_ to fork ultralytics/yolov5 because the competition scoring was weighted by deployment simplicity. Installing Torch and various dependencies on non-desktop hardware can be a significant challenge - and there is no need for it when using the tflite-runtime.
-* **Accuracy benchmark** code is provided for running on COCO 2017. It's a slimmed down version of `val.py` and there is also a script for checking the output. mAP results are provided in this readme.
-  * For the 224x224 model: mAP **18.4**, mAP50 **30.5**
-* Packages are easily installable on embedded platforms such as the Google Coral Dev board and the Jetson Nano. **It should also work on any platform that an EdgeTPU can be connected to, e.g. Desktop.**
-* This repository uses the Jetson Nano as an example, but the code should be transferrable given the few dependencies required
-  * Setup instructions are given for the Coral, but these are largely based on Google's guidelines and are not tested as I didn't have access to a dev board at time of writing.
-* tflite export is taken from https://github.com/ultralytics/yolov5/blob/master/models/tf.py
-  * These models have the detection step built-in as a custom Keras layer. This provides a significant speed boost, but does mean that larger models are unable to compile.
-* **Speed benchmarks are good**: you can expect 24 fps using the EdgeTPU on a Jetson Nano for a 224 px input.
-  * You can easily swap in a different model/input size, but larger/smaller models are going to vary in runtime and accuracy.
-  * The workaround for exporting a 416 px model is to use an older runtime version where the transpose operation is not supported. This significantly slows model performance because then the `Detect` stage must be run as a CPU operation. See [bogdannedelcu](https://github.com/bogdannedelcu/yolov5-export-to-coraldevmini)'s solution for an example of this.
-    * Note this approach doesn't work any more because the compiler supports the Transpose option. I tried exporting with different model runtimes in an attempt to force the compiler to switch to CPU execution before these layers, but it didn't seem to help.
-* **Extensive documentation** is provided for hardware setup and library testing. This is more for the Jetson than anything else, as library setup on the Coral Dev Board should be minimal.
-* A **Dockerfile** is provided for a repeatable setup and test environment
-
 ## Introduction
 
 In this repository we'll explore how to run a state-of-the-art object detection mode, [Yolov5](https://github.com/ultralytics/yolov5), on the [Google Coral EdgeTPU](coral.ai/). 
+
+This project was submitted to, and won, Ultralytic's competition for edge device deployment in the EdgeTPU category. The notes for the competition are at the bottom of this file, for reference.
+
+Probably the most interesting aspect for people stumbling across this is that this project requires very few runtime dependencies (it doesn't even need PyTorch). It contains comprehensive benchmarking code, examples of how to compile and run a custom model on the EdgeTPU and a discussion of how to test on real edge hardware.
 
 **TL;DR (see the Dockerfile):**
 
@@ -218,3 +198,26 @@ INFO:COCOEval:mAP: 0.15768057519574114
 INFO:COCOEval:mAP50: 0.25142469970806514
 ```
 
+## Ultralytics Competition Notes
+
+This repository is an entry into the Ultralytics export challenge for the EdgeTPU. It provides the following solution:
+
+* A minimal repository which has extremely few dependencies:
+  * `pycoral` , `opencv` for image handling (you could drop this using e.g Pillow) and `numpy`
+  * Other "light" dependencies include `tqdm` for progress reporting, and `yaml` for parsing names files. `json` is also used for output logs (e.g. benchmarks)
+  * **No dependency on Torch**, _which means no building Torch_ - from clone to inference is extremely fast.
+  * Code has been selectively taken from the original Ultralytics repository and converted to use Numpy where necessary, for example non-max suppression. There is essentially no speed penalty for this on a CPU-only device.
+* I chose _not_ to fork ultralytics/yolov5 because the competition scoring was weighted by deployment simplicity. Installing Torch and various dependencies on non-desktop hardware can be a significant challenge - and there is no need for it when using the tflite-runtime.
+* **Accuracy benchmark** code is provided for running on COCO 2017. It's a slimmed down version of `val.py` and there is also a script for checking the output. mAP results are provided in this readme.
+  * For the 224x224 model: mAP **18.4**, mAP50 **30.5**
+* Packages are easily installable on embedded platforms such as the Google Coral Dev board and the Jetson Nano. **It should also work on any platform that an EdgeTPU can be connected to, e.g. Desktop.**
+* This repository uses the Jetson Nano as an example, but the code should be transferrable given the few dependencies required
+  * Setup instructions are given for the Coral, but these are largely based on Google's guidelines and are not tested as I didn't have access to a dev board at time of writing.
+* tflite export is taken from https://github.com/ultralytics/yolov5/blob/master/models/tf.py
+  * These models have the detection step built-in as a custom Keras layer. This provides a significant speed boost, but does mean that larger models are unable to compile.
+* **Speed benchmarks are good**: you can expect 24 fps using the EdgeTPU on a Jetson Nano for a 224 px input.
+  * You can easily swap in a different model/input size, but larger/smaller models are going to vary in runtime and accuracy.
+  * The workaround for exporting a 416 px model is to use an older runtime version where the transpose operation is not supported. This significantly slows model performance because then the `Detect` stage must be run as a CPU operation. See [bogdannedelcu](https://github.com/bogdannedelcu/yolov5-export-to-coraldevmini)'s solution for an example of this.
+    * Note this approach doesn't work any more because the compiler supports the Transpose option. I tried exporting with different model runtimes in an attempt to force the compiler to switch to CPU execution before these layers, but it didn't seem to help.
+* **Extensive documentation** is provided for hardware setup and library testing. This is more for the Jetson than anything else, as library setup on the Coral Dev Board should be minimal.
+* A **Dockerfile** is provided for a repeatable setup and test environment
