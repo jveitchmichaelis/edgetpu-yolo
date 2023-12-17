@@ -261,7 +261,7 @@ class EdgeTPUModel:
                     output[base]['cls_name'] = self.names[c]
                     
             if save_txt:
-                output_txt = base+"txt"
+                output_txt = base+".txt"
                 with open(output_txt, 'w') as f:
                    json.dump(output, f, indent=1)
             if save_img:
