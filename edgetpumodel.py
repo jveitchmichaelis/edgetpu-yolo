@@ -18,7 +18,7 @@ logger = logging.getLogger("EdgeTPUModel")
 
 class EdgeTPUModel:
 
-    def __init__(self, model_file, names_file, conf_thresh=0.25, iou_thresh=0.45, filter_classes=None, agnostic_nms=False, max_det=1000, full_int=False):
+    def __init__(self, model_file, names_file, conf_thresh=0.25, iou_thresh=0.45, filter_classes=None, agnostic_nms=False, max_det=1000, v8=False):
         """
         Creates an object for running a Yolov5 model on an EdgeTPU
         
@@ -43,7 +43,7 @@ class EdgeTPUModel:
         self.filter_classes = filter_classes
         self.agnostic_nms = agnostic_nms
         self.max_det = 1000
-        self.full_int = full_int
+        self.v8 = v8
         
         logger.info("Confidence threshold: {}".format(conf_thresh))
         logger.info("IOU threshold: {}".format(iou_thresh))
@@ -156,7 +156,7 @@ class EdgeTPUModel:
         
         # Scale input, conversion is: real = (int_8 - zero)*scale
         x = (x/self.input_scale) + self.input_zero
-        if self.full_int:
+        if self.v8:
             x = x[np.newaxis].astype(np.int8)
         else:
             x = x[np.newaxis].astype(np.uint8)
