@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--bench_coco", action='store_true', help="Process a stream")
     parser.add_argument("--coco_path", type=str, help="Path to COCO 2017 Val folder")
     parser.add_argument("--quiet","-q", action='store_true', help="Disable logging (except errors)")
-    parser.add_argument("--full_int", action='store_true', help="Datatype of model int8?")
+    parser.add_argument("--v8", action='store_true', help="yolov8 model?")
         
     args = parser.parse_args()
     
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         logger.error("Please select either an input image or a stream")
         exit(1)
     
-    model = EdgeTPUModel(args.model, args.names, conf_thresh=args.conf_thresh, iou_thresh=args.iou_thresh, full_int=args.full_int)
+    model = EdgeTPUModel(args.model, args.names, conf_thresh=args.conf_thresh, iou_thresh=args.iou_thresh, full_int=args.v8)
     input_size = model.get_image_size()
 
     if args.full_int:
