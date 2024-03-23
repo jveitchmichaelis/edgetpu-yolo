@@ -167,7 +167,7 @@ class EdgeTPUModel:
         # Scale output
         result = (common.output_tensor(self.interpreter, 0).astype('float32') - self.output_zero) * self.output_scale
         if self.v8:
-            result = np.transpose(result)
+            result = np.transpose(result,[0,2,1])
         
         self.inference_time = time.time() - tstart
         
