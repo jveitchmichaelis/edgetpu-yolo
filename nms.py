@@ -54,13 +54,57 @@ def box_iou(box_i,boxes):
 def non_max_suppresion_v8(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
                         labels=(), max_det=300):
     # TODO: Test this for changed parameter number in yolov8!!! All that could be detected with last commit were persons!
+    #
+    # # Transpose and squeeze the output to match the expected shape
+    # # prediction = np.transpose(np.squeeze(prediction[0]))
+    # prediction = np.squeeze(prediction[0])  # eleminate batch id. only one batch can run un TPU anyway..., transpose is already done one step eralier
+    #
+    # # Get the number of rows in the outputs array
+    # rows = prediction.shape[0]
+    #
+    # # Lists to store the bounding boxes, scores, and class IDs of the detections
+    # boxes = []
+    # scores = []
+    # class_ids = []
+    #
+    # # Iterate over each row in the outputs array
+    # for i in range(rows):
+    #     # Extract the class scores from the current row
+    #     classes_scores = prediction[i][4:]
+    #
+    #     # Find the maximum score among the class scores
+    #     max_score = np.amax(classes_scores)
+    #
+    #     # If the maximum score is above the confidence threshold
+    #     if max_score >= conf_thres:
+    #         # Get the class ID with the highest score
+    #         class_id = np.argmax(classes_scores)
+    #
+    #         # Add the class ID, score, and box coordinates to the respective lists
+    #         class_ids.append(class_id)
+    #         scores.append(max_score)
+    #         boxes.append(xywh2xyxy(prediction[:, :4]))
+    #
+    # # Apply non-maximum suppression to filter out overlapping bounding boxes
+    # indices = nms(np.ndarray(boxes), np.ndarray(scores), iou_thres)
+    #
+    # if indices.shape[0] > max_det:  # limit detections
+    #     indices = indices[:max_det]
+    #
+    #     if (time.time() - t) > time_limit:
+    #         print(f'WARNING: NMS time limit {time_limit}s exceeded')
+    #         break  # time limit exceeded
+    #
+    #
+    # # Return the modified input image
+    # return input_image
 
     nc = prediction.shape[2] - 4  # number of classes
     # xc = prediction[..., 4] > conf_thres  # candidates
     xc = []
     for xi, x in enumerate(prediction):  # image index, image inference
         conf = np.amax(x[:, 4:], axis=1, keepdims=True)
-        if conf > conf_thres:
+        if np.any(conf > conf_thres):
             xc.append(True)
         else:
             xc.append(False)
