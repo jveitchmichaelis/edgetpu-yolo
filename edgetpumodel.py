@@ -7,7 +7,7 @@ import yaml
 import numpy as np
 import pycoral.utils.edgetpu as etpu
 from pycoral.adapters import common
-from nms import non_max_suppression
+from nms import non_max_suppression, non_max_suppresion_v8
 import cv2
 import json
 
@@ -42,7 +42,7 @@ class EdgeTPUModel:
         self.iou_thresh = iou_thresh
         self.filter_classes = filter_classes
         self.agnostic_nms = agnostic_nms
-        self.max_det = 1000
+        self.max_det = max_det
         self.v8 = v8
         
         logger.info("Confidence threshold: {}".format(conf_thresh))
@@ -150,7 +150,7 @@ class EdgeTPUModel:
         tstart = time.time()
         # Transpose if C, H, W
         if x.shape[0] == 3:
-          x = x.transpose((1,2,0))
+          x = x.transpose((1, 2, 0))
         
         x = x.astype('float32')
         
@@ -167,15 +167,19 @@ class EdgeTPUModel:
         # Scale output
         result = (common.output_tensor(self.interpreter, 0).astype('float32') - self.output_zero) * self.output_scale
         if self.v8:
-            result = np.transpose(result, [0, 2, 1]) # tranpose for yoolov8 models
+            result = np.transpose(result, [0, 2, 1])  # tranpose for yolov8 models
         
         self.inference_time = time.time() - tstart
         
         if with_nms:
         
             tstart = time.time()
-            nms_result = non_max_suppression(result, self.conf_thresh, self.iou_thresh, self.filter_classes,
-                                             self.agnostic_nms, max_det=self.max_det, v8=self.v8)
+            if self.v8:
+                nms_result = non_max_suppresion_v8(result, self.conf_thresh, self.iou_thresh, self.filter_classes,
+                                                   self.agnostic_nms, max_det=self.max_det)
+            else:
+                nms_result = non_max_suppression(result, self.conf_thresh, self.iou_thresh, self.filter_classes,
+                                                 self.agnostic_nms, max_det=self.max_det)
             self.nms_time = time.time() - tstart
             
             return nms_result
@@ -238,7 +242,7 @@ class EdgeTPUModel:
         if len(det):
             # Rescale boxes from img_size to im0 size
             # x1, y1, x2, y2=
-            det[:, :4] = self.get_scaled_coords(det[:,:4], output_image, pad)
+            det[:, :4] = self.get_scaled_coords(det[:, :4], output_image, pad)
             output = {}
             base, ext = os.path.splitext(output_path)
             
