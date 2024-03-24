@@ -53,11 +53,11 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
                         labels=(), max_det=300, v8=False):
     # TODO: Correct this for changed parameter number in yolov8!!!
     if v8:
-        split_val=-1
+        split_val = -1
     else:
-        split_val=0
+        split_val = 0
     
-    nc = prediction.shape[2] - 5 + split_val # number of classes
+    nc = prediction.shape[2] - 5 - split_val # number of classes
     xc = prediction[..., 4] > conf_thres  # candidates
 
     # Checks
@@ -83,7 +83,7 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
         if labels and len(labels[xi]):
             l = labels[xi]
             v = np.zeros((len(l), nc + 5 + split_val))
-            v[:, :4] = l[:, 1:5 + split_val]  # box
+            v[:, :4] = l[:, 1:(5 + split_val)]  # box
             v[:, 4 + split_val] = 1.0  # conf
             v[range(len(l)), l[:, 0].long() + 5 + split_val] = 1.0  # cls
             x = np.concatenate((x, v), 0)
@@ -103,7 +103,7 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
 
         # Detections matrix nx6 (xyxy, conf, cls)
         if multi_label:
-            i, j = (x[:, 5 + split_val:] > conf_thres).nonzero(as_tuple=False).T
+            i, j = (x[:, (5 + split_val):] > conf_thres).nonzero(as_tuple=False).T
             x = np.concatenate((box[i], x[i, j + 5 + split_val, None], j[:, None].astype(float)), axis=1)
         else:  # best class only
             conf = np.amax(x[:, 5 + split_val:], axis=1, keepdims=True)

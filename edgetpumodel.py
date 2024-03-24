@@ -167,14 +167,15 @@ class EdgeTPUModel:
         # Scale output
         result = (common.output_tensor(self.interpreter, 0).astype('float32') - self.output_zero) * self.output_scale
         if self.v8:
-            result = np.transpose(result,[0,2,1])
+            result = np.transpose(result, [0, 2, 1]) # tranpose for yoolov8 models
         
         self.inference_time = time.time() - tstart
         
         if with_nms:
         
             tstart = time.time()
-            nms_result = non_max_suppression(result, self.conf_thresh, self.iou_thresh, self.filter_classes, self.agnostic_nms, max_det=self.max_det)
+            nms_result = non_max_suppression(result, self.conf_thresh, self.iou_thresh, self.filter_classes,
+                                             self.agnostic_nms, max_det=self.max_det, v8=self.v8)
             self.nms_time = time.time() - tstart
             
             return nms_result
