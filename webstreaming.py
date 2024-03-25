@@ -120,7 +120,7 @@ def video_feed():
 if __name__ == '__main__':
 	# construct the argument parser and parse command line arguments
 	ap = argparse.ArgumentParser()
-	ap.add_argument("-i", "--ip", type=str, default='192.168.178.47', help="ip address of the device")
+	ap.add_argument("-i", "--ip", type=str, default='0.0.0.0', help="ip address of the device")
 	ap.add_argument("-o", "--port", type=int, default='4664', help="port number of the server (1024 to 65535)")
 	ap.add_argument("--model", "-m", help="weights file", required=True)
 	ap.add_argument("--conf_thresh", type=float, default=0.25, help="model confidence threshold")
