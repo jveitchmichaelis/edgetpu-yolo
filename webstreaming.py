@@ -35,7 +35,7 @@ def index():
 	return render_template("index.html")
 
 
-def detect_stream(model: EdgeTPUModel, video_device: str, max_items: int):
+def detect_stream(model: EdgeTPUModel, video_device: str):
 	# grab global references to the video stream, output frame, and
 	# lock variables
 	global outputFrame, lock
