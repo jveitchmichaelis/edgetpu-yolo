@@ -2,9 +2,7 @@
 from flask import Response
 from flask import Flask
 from flask import render_template
-import numpy as np
 import threading
-import argparse
 import datetime
 import time
 import cv2
@@ -70,7 +68,6 @@ def detect_stream(model: EdgeTPUModel, video_device: str):
 			break
 
 	cam.release()
-
 
 
 def append_objs_to_img(image, inference_size, objs, labels):
