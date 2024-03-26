@@ -277,34 +277,3 @@ class EdgeTPUModel:
               cv2.imwrite(output_path, output_image)
             
         return det
-
-    def process_images(self, det, output_image, pad, hide_labels=False, hide_conf=False):
-        """
-        Process predictions and optionally output an image with annotations
-        """
-        if len(det):
-            # Rescale boxes from img_size to im0 size
-            # x1, y1, x2, y2=
-            det[:, :4] = self.get_scaled_coords(det[:, :4], output_image, pad)
-
-            s = ""
-
-            # Print results
-            for c in np.unique(det[:, -1]):
-                n = (det[:, -1] == c).sum()  # detections per class
-                s += f"{n} {self.names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
-            if s != "":
-                s = s.strip()
-                s = s[:-1]
-
-            logger.info("Detected: {}".format(s))
-
-            # Write results
-            for *xyxy, conf, cls in reversed(det):
-                # Add bbox to image
-                c = int(cls)  # integer class
-                label = None if hide_labels else (self.names[c] if hide_conf else f'{self.names[c]} {conf:.2f}')
-                output_image = plot_one_box(xyxy, output_image, label=label, color=self.colors(c, True))
-
-        return output_image
