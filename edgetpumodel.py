@@ -7,7 +7,7 @@ import yaml
 import numpy as np
 import pycoral.utils.edgetpu as etpu
 from pycoral.adapters import common
-from nms import non_max_suppression
+from nms import non_max_suppression, non_max_suppresion_v8
 import cv2
 import json
 
@@ -18,7 +18,7 @@ logger = logging.getLogger("EdgeTPUModel")
 
 class EdgeTPUModel:
 
-    def __init__(self, model_file, names_file, conf_thresh=0.25, iou_thresh=0.45, filter_classes=None, agnostic_nms=False, max_det=1000):
+    def __init__(self, model_file, names_file, conf_thresh=0.25, iou_thresh=0.45, filter_classes=None, agnostic_nms=False, max_det=1000, v8=False):
         """
         Creates an object for running a Yolov5 model on an EdgeTPU
         
@@ -42,7 +42,8 @@ class EdgeTPUModel:
         self.iou_thresh = iou_thresh
         self.filter_classes = filter_classes
         self.agnostic_nms = agnostic_nms
-        self.max_det = 1000
+        self.max_det = max_det
+        self.v8 = v8
         
         logger.info("Confidence threshold: {}".format(conf_thresh))
         logger.info("IOU threshold: {}".format(iou_thresh))
@@ -116,9 +117,8 @@ class EdgeTPUModel:
             logger.debug("Expecting input shape: {}".format(self.input_size))
             return self.input_size
         else:
-            logger.warn("Interpreter is not yet loaded")
-            
-    
+            logger.warning("Interpreter is not yet loaded")
+
     def predict(self, image_path, save_img=True, save_txt=True):
         logger.info("Attempting to load {}".format(image_path))
     
@@ -131,9 +131,7 @@ class EdgeTPUModel:
         det = self.process_predictions(pred[0], full_image, pad, output_path, save_img=save_img, save_txt=save_txt)
         
         return det
-        
-        
-    
+
     def forward(self, x:np.ndarray, with_nms=True) -> np.ndarray:
         """
         Predict function using the EdgeTPU
@@ -149,25 +147,36 @@ class EdgeTPUModel:
         tstart = time.time()
         # Transpose if C, H, W
         if x.shape[0] == 3:
-          x = x.transpose((1,2,0))
+          x = x.transpose((1, 2, 0))
         
         x = x.astype('float32')
-
+        
         # Scale input, conversion is: real = (int_8 - zero)*scale
         x = (x/self.input_scale) + self.input_zero
-        x = x[np.newaxis].astype(np.uint8)
+        if self.v8:
+            x = x[np.newaxis].astype(np.int8)
+        else:
+            x = x[np.newaxis].astype(np.uint8)
         
         self.interpreter.set_tensor(self.input_details[0]['index'], x)
         self.interpreter.invoke()
         
         # Scale output
         result = (common.output_tensor(self.interpreter, 0).astype('float32') - self.output_zero) * self.output_scale
+        if self.v8:
+            result = np.transpose(result, [0, 2, 1])  # tranpose for yolov8 models
+        
         self.inference_time = time.time() - tstart
         
         if with_nms:
         
             tstart = time.time()
-            nms_result = non_max_suppression(result, self.conf_thresh, self.iou_thresh, self.filter_classes, self.agnostic_nms, max_det=self.max_det)
+            if self.v8:
+                nms_result = non_max_suppresion_v8(result, self.conf_thresh, self.iou_thresh, self.filter_classes,
+                                                   self.agnostic_nms, max_det=self.max_det)
+            else:
+                nms_result = non_max_suppression(result, self.conf_thresh, self.iou_thresh, self.filter_classes,
+                                                 self.agnostic_nms, max_det=self.max_det)
             self.nms_time = time.time() - tstart
             
             return nms_result
@@ -230,7 +239,7 @@ class EdgeTPUModel:
         if len(det):
             # Rescale boxes from img_size to im0 size
             # x1, y1, x2, y2=
-            det[:, :4] = self.get_scaled_coords(det[:,:4], output_image, pad)
+            det[:, :4] = self.get_scaled_coords(det[:, :4], output_image, pad)
             output = {}
             base, ext = os.path.splitext(output_path)
             
