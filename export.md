@@ -51,9 +51,15 @@ https://colab.research.google.com/github/google-coral/tutorials/blob/master/comp
 
 If you're running Windows, this will work perfectly well inside WSL (i.e. install Ubuntu from the app store). To install the compiler, follow the steps in the notebook on your own machine. It's straightforward:
 
-```bash
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+```
+ ⛔️ DEPRECATED: curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+```
+```
+sudo mkdir -p /etc/apt/keyrings/
+wget -O- https://packages.cloud.google.com/apt/doc/apt-key.gpg |gpg --dearmor | sudo tee /etc/apt/keyrings/apt-key.gpg > /dev/null
+```
+```
+echo "deb [signed-by=/etc/apt/keyrings/apt-key.gpg] deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" |sudo tee /etc/apt/sources.list.d/apt-key.list
 sudo apt-get update
 sudo apt-get install edgetpu-compiler	
 ```
